@@ -1,8 +1,12 @@
 ---
 title: "Clustering 3K PBMCs with Seurat"
 author: "Kevin Rue-Albrecht"
-format: html
+format:
+  html:
+    embed-resources: true
 ---
+
+*Generated: `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`*
 
 ## Libraries
 
@@ -35,6 +39,17 @@ sce <- DropletUtils::read10xCounts(samples = "data")
 ```
 
 > A Galaxy tool wrapper exists, [DropletUtils Read10x](https://usegalaxy.eu/?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Febi-gxa%2Fdropletutils_read_10x%2Fdropletutils_read_10x%2F1.0.4%2Bgalaxy0&version=latest), but produces an `rdata` file which needs to be manually re-typed to `rdata.sce` or `loom` depending on the downstream steps.
+
+#### Switch to user-friendlier gene identifiers
+
+Setting the rownames of the object to "uniquified gene symbols" makes later plots coloured by gene expression more human-friendly.
+See `scater::plotPCA(sce, colour_by = gene_id)`).
+Note that the real gene symbols remain available in `rowData(sce)[["Symbol"]]`.
+
+```{r}
+rownames(sce) <- make.unique(rowData(sce)[["Symbol"]])
+```
+
 
 #### Inspect the `SingleCellExperiment` object.
 
@@ -194,3 +209,54 @@ curve(metadata(allf)$trend(x), add=TRUE, col="dodgerblue")
 
 > TODO: check for existing Galaxy tool wrapper.
 > Note that there is no packaged function available for this. Both the help page and the OSCA book give base R code for quick inspection. A Galaxy Tool wrapper could easily produce a nicer ggplot2 graphics including labels for the top N genes as in the Seurat tutorial.
+
+## Dimensionality Reduction
+
+### Principal Component Analysis
+
+#### Perform the PCA
+
+```{r}
+sce <- scater::runPCA(
+	x = sce,
+	ncomponents = 50,
+	subset_row = hvgs
+)
+```
+
+> TODO: check for existing Galaxy tool wrapper.
+
+### Visualise the PCA Results
+
+#### Visualise the PCA Results - Dimensional Loadings
+
+```{r}
+message("No direct equivalent to Seurat VizDimLoadings")
+```
+
+> TODO: check when this might have an impact on the rest of the tutorial
+
+#### Visualise the PCA Results - DimPlot
+
+```{r}
+scater::plotPCA(sce)
+```
+
+> TODO: check for existing Galaxy tool wrapper.
+
+#### Visualise the PCA Results - Feature Plots
+
+```{r}
+#| fig-width: 8
+#| fig-height: 4
+plot_list <- list()
+for (gene_id in c("CST3", "CD79A", "HLA-DQA1", "MALAT1", "NKG7", "PPBP")) {
+	plot_list[[gene_id]] <- scater::plotPCA(
+		object = sce,
+		colour_by = gene_id
+	)
+}
+cowplot::plot_grid(plotlist = plot_list, nrow = 2)
+```
+
+> Note: this relies on the "uniquified gene symbol" rather than the actual gene symbol (available in `rowData(sce)[["Symbol"]]`). This ensures that every single feature in the dataset can be plotted whether or not it has a unique gene symbol or not.
