@@ -12,6 +12,7 @@ format: html
 library(cowplot)
 library(DropletUtils)
 library(scater)
+library(scran)
 library(scuttle)
 ```
 
@@ -172,7 +173,7 @@ sce <- scuttle::logNormCounts(x = sce)
 
 ```{r}
 allf <- scran::modelGeneVar(x = sce)
-hvgs <- getTopHVGs(dec.pbmc, n = 2000)
+hvgs <- scran::getTopHVGs(allf, n = 2000)
 ```
 
 > TODO: check for existing Galaxy tool wrapper.
