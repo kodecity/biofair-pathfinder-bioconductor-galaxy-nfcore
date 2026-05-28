@@ -253,6 +253,7 @@ plot_list <- list()
 for (gene_id in c("CST3", "CD79A", "HLA-DQA1", "MALAT1", "NKG7", "PPBP")) {
 	plot_list[[gene_id]] <- scater::plotPCA(
 		object = sce,
+		ncomponents = c(1, 2),
 		colour_by = gene_id
 	)
 }
@@ -260,3 +261,17 @@ cowplot::plot_grid(plotlist = plot_list, nrow = 2)
 ```
 
 > Note: this relies on the "uniquified gene symbol" rather than the actual gene symbol (available in `rowData(sce)[["Symbol"]]`). This ensures that every single feature in the dataset can be plotted whether or not it has a unique gene symbol or not.
+
+```{r}
+#| fig-width: 8
+#| fig-height: 4
+plot_list <- list()
+for (gene_id in c("CST3", "CD79A", "HLA-DQA1", "MALAT1", "NKG7", "PPBP")) {
+	plot_list[[gene_id]] <- scater::plotPCA(
+		object = sce,
+		ncomponents = c(2, 3),
+		colour_by = gene_id
+	)
+}
+cowplot::plot_grid(plotlist = plot_list, nrow = 2)
+```
