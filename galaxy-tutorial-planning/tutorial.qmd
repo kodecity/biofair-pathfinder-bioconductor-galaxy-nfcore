@@ -4,6 +4,8 @@ author: "Kevin Rue-Albrecht"
 format:
   html:
     embed-resources: true
+    toc: true
+    toc-location: right
 ---
 
 *Generated: `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`*
