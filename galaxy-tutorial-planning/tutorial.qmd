@@ -1,5 +1,5 @@
 ---
-title: "Clustering 3K PBMCs with Seurat"
+title: "Clustering 3K PBMCs with Bioconductor"
 author: "Kevin Rue-Albrecht"
 format:
   html:
@@ -13,6 +13,7 @@ format:
 ```{r}
 #| message: false
 #| warning: false
+library(bluster)
 library(cowplot)
 library(DropletUtils)
 library(scater)
@@ -260,7 +261,7 @@ for (gene_id in c("CST3", "CD79A", "HLA-DQA1", "MALAT1", "NKG7", "PPBP")) {
 cowplot::plot_grid(plotlist = plot_list, nrow = 2)
 ```
 
-> Note: this relies on the "uniquified gene symbol" rather than the actual gene symbol (available in `rowData(sce)[["Symbol"]]`). This ensures that every single feature in the dataset can be plotted whether or not it has a unique gene symbol or not.
+Same for PC2 and PC3.
 
 ```{r}
 #| fig-width: 8
@@ -275,3 +276,39 @@ for (gene_id in c("CST3", "CD79A", "HLA-DQA1", "MALAT1", "NKG7", "PPBP")) {
 }
 cowplot::plot_grid(plotlist = plot_list, nrow = 2)
 ```
+
+> TODO: check for existing Galaxy tool wrapper.
+> Note: this relies on the "uniquified gene symbol" rather than the actual gene symbol (available in `rowData(sce)[["Symbol"]]`). This ensures that every single feature in the dataset can be plotted whether or not it has a unique gene symbol or not.
+
+#### Visualise the PCA Results - Heatmaps
+
+```{r}
+message("No direct equivalent to Seurat::DimHeatmap")
+```
+
+### Determine the ‘dimensionality’ of the dataset
+
+#### Make an Elbow Plot
+
+```{r}
+percent.var <- attr(reducedDim(sce), "percentVar")
+plot(percent.var, log="y", xlab="PC", ylab="Variance explained (%)")
+```
+
+> TODO: check for existing Galaxy tool wrapper.
+
+## Cluster the Cells
+
+```{r}
+colData(sce)[["cluster"]] <- clusterCells(
+	x = sce,
+	use.dimred = "PCA",
+	BLUSPARAM = bluster::SNNGraphParam(
+		k = 10,
+		type="rank",
+		cluster.fun = "walktrap"
+	)
+)
+```
+
+> TODO: check for existing Galaxy tool wrapper.
