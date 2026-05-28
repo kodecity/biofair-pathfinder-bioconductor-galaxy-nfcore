@@ -344,8 +344,8 @@ scater::plotUMAP(
 ```
 
 ```{r}
-#| fig-width: 12
-#| fig-height: 6
+#| fig-width: 8
+#| fig-height: 4
 plot_list <- list()
 for (gene_id in c("CST3", "CD79A", "HLA-DQA1", "MALAT1", "NKG7", "PPBP")) {
 	plot_list[[gene_id]] <- scater::plotUMAP(
@@ -357,3 +357,20 @@ cowplot::plot_grid(plotlist = plot_list, nrow = 2)
 ```
 
 > TODO: check for existing Galaxy tool wrapper.
+
+### Other ways to visualise clusters
+
+#### Visualise Expression across Clusters with a Violin Plot
+
+```{r}
+#| fig-width: 8
+#| fig-height: 4
+plotExpression(
+	object = sce,
+	features = c("CST3", "CD79A", "HLA-DQA1", "MALAT1", "NKG7", "PPBP"),
+	ncol = 3,
+	x = "cluster",
+	colour_by = "cluster"
+)
+```
+
