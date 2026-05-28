@@ -4,7 +4,20 @@ author: "Kevin Rue-Albrecht"
 format: html
 ---
 
+## Libraries
+
+```{r}
+#| message: false
+#| warning: false
+library(cowplot)
+library(DropletUtils)
+library(scater)
+library(scuttle)
+```
+
 ## Data
+
+### Data download
 
 To create a parallel tutorial to the existing tutorial [Clustering 3K PBMCs with Seurat](https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-seurat-pbmc3k/tutorial.html), input data files were downloaded from these Zenodo links:
 
@@ -14,13 +27,7 @@ https://zenodo.org/record/3581213/files/barcodes.tsv
 https://zenodo.org/record/3581213/files/matrix.mtx
 ```
 
-## Libraries
-
-```{r}
-library(DropletUtils)
-```
-
-## SingleCellExperiment object
+### SingleCellExperiment object
 
 Import the triplet of files (`matrix.mtx`, `barcodes.tsv`, `genes.tsv`) under `data/`.
 
@@ -28,9 +35,71 @@ Import the triplet of files (`matrix.mtx`, `barcodes.tsv`, `genes.tsv`) under `d
 sce <- DropletUtils::read10xCounts(samples = "data")
 ```
 
+> A Galaxy tool wrapper exists, [DropletUtils Read10x](https://usegalaxy.eu/?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Febi-gxa%2Fdropletutils_read_10x%2Fdropletutils_read_10x%2F1.0.4%2Bgalaxy0&version=latest), but produces an `rdata` file which needs to be manually re-typed to `rdata.sce` or `loom` depending on the downstream steps.
+
 Inspect the `SingleCellExperiment` object.
 
 ```{r}
-sce
+print(sce)
+```
+
+> New Galaxy tool wrapper needed here, simply to run `print(sce)` into a `txt` file for inspection.
+
+## Preprocessing
+
+### Quality control
+
+Identify mitochondrial genes.
+
+```{r}
+mt_gene_ids <- rownames(sce)[grep('^MT-', rowData(sce)[["Symbol"]])]
+mt_gene_ids
+```
+
+> New Galaxy Tool needed.
+> The [Single-cell quality control with scater](https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-scater-qc/tutorial.html) tutorial provides a precomputed file of mitochondrial genes.
+
+```{r}
+gene_subsets <- list()
+gene_subsets[["MT"]] <- mt_gene_ids
+sce <- scuttle::addPerCellQCMetrics(
+	x = sce,
+	subsets = gene_subsets
+)
+```
+
+> A Galaxy Tool wrapper exists, [Scater: calculate QC metrics](https://usegalaxy.eu/?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fiuc%2Fscater_create_qcmetric_ready_sce%2Fscater_create_qcmetric_ready_sce%2F1.22.0&version=latest), but requires the expression matrix in tabular format.
+
+### Filtering of low-quality cells
+
+Visualise QC Metrics.
+
+> Note: In contrast to Seurat, scater can only plot one QC metric at a time.
+
+```{r}
+#| fig-width: 6
+#| fig-height: 3
+plot_list <- list()
+plot_list[["detected"]] <- scater::plotColData(
+	object = sce,
+	y = "detected"
+)
+plot_list[["sum"]] <- scater::plotColData(
+	object = sce,
+	y = "sum"
+)
+plot_list[["subsets_MT_percent"]] <- scater::plotColData(
+	object = sce,
+	y = "subsets_MT_percent"
+)
+cowplot::plot_grid(plotlist = plot_list, nrow = 1)
+```
+
+
+Filter Out Low Quality Cells
+
+```{r}
+keep_cells <- sce$detected >= 200 & sce$detected <= 2500 & sce$subsets_MT_percent <= 5
+sce <- sce[keep_cells, ]
 ```
 

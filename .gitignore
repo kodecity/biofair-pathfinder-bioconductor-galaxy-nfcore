@@ -1,3 +1,5 @@
 renv.lock
 .Rprofile
 renv/
+.Rproj.user
+biofair-pathfinder-bioconductor-galaxy-nfcore.Rproj
