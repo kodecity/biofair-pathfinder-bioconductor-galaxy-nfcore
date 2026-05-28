@@ -38,23 +38,16 @@ https://zenodo.org/record/3581213/files/matrix.mtx
 #### Create a SingleCellExperiment Object
 
 ```{r}
-sce <- DropletUtils::read10xCounts(samples = "data")
+sce <- DropletUtils::read10xCounts(
+	samples = "data",
+	row.names = "symbol"
+)
 sce
 ```
 
-> A Galaxy tool wrapper exists, [DropletUtils Read10x](https://usegalaxy.eu/?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Febi-gxa%2Fdropletutils_read_10x%2Fdropletutils_read_10x%2F1.0.4%2Bgalaxy0&version=latest), but produces an `rdata` file which needs to be manually re-typed to `rdata.sce` or `loom` depending on the downstream steps.
-
-#### Switch to user-friendlier gene identifiers
-
-Setting the rownames of the object to "uniquified gene symbols" makes later plots coloured by gene expression more human-friendly.
-See `scater::plotPCA(sce, colour_by = gene_id)`).
-Note that the real gene symbols remain available in `rowData(sce)[["Symbol"]]`.
-
-```{r}
-rownames(sce) <- make.unique(rowData(sce)[["Symbol"]])
-sce
-```
-
+> A Galaxy tool wrapper exists, [DropletUtils Read10x](https://usegalaxy.eu/?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Febi-gxa%2Fdropletutils_read_10x%2Fdropletutils_read_10x%2F1.0.4%2Bgalaxy0&version=latest), but:
+> - produces an `rdata` file. This file needs to be manually re-typed to `rdata.sce` or `loom` in the Galaxy interface depending on the requirements of downstream tool wrappers.
+> - does not offer the option to use gene symbols as rownames. Unless the tool wrapper can be update to offer this option, another tool wrapper is needed to set rownames to gene symbols.
 
 #### Inspect the `SingleCellExperiment` object.
 
@@ -62,7 +55,7 @@ sce
 print(sce)
 ```
 
-> New Galaxy tool wrapper needed here, simply to run `print(sce)` into a `txt` file for inspection.
+> New Galaxy Tool needed to run the code above and write the output to a `txt` file.
 
 ## Preprocessing
 
@@ -76,7 +69,8 @@ mt_gene_ids
 ```
 
 > New Galaxy Tool needed to run the code above.
-> The [Single-cell quality control with scater](https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-scater-qc/tutorial.html) tutorial provides a precomputed file of mitochondrial genes.
+
+> Note: the [Single-cell quality control with scater](https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-scater-qc/tutorial.html) tutorial provides a precomputed file of mitochondrial genes.
 
 #### Calculate the Proportion of Mitochondrial Reads
 
@@ -90,7 +84,8 @@ sce <- scuttle::addPerCellQCMetrics(
 sce
 ```
 
-> A Galaxy Tool wrapper exists, [Scater: calculate QC metrics](https://usegalaxy.eu/?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fiuc%2Fscater_create_qcmetric_ready_sce%2Fscater_create_qcmetric_ready_sce%2F1.22.0&version=latest), but requires the expression matrix in tabular format.
+> A Galaxy Tool wrapper exists, [Scater: calculate QC metrics](https://usegalaxy.eu/?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fiuc%2Fscater_create_qcmetric_ready_sce%2Fscater_create_qcmetric_ready_sce%2F1.22.0&version=latest), but:
+> - requires the expression matrix in tabular format. This is awkward as the original matrix comes in `mtx` format, and re-exporting the matrix from the `SingleCellExperiment` object to tabular format would be awkward and unnecessary given that this function is designed to work on directly on the `SingleCellExperiment` object.
 
 ### Filtering of low-quality cells
 
@@ -116,7 +111,8 @@ cowplot::plot_grid(plotlist = plot_list, nrow = 1)
 ```
 
 > TODO: check for existing wrapper
-> Note: In contrast to `Seurat`, `scater` can only plot one QC metric at a time. We can use `cowplot` to combine them into a single figure.
+
+> Note: In contrast to `Seurat`, `scater` can only plot one QC metric at a time. Here, we use `cowplot` to combine them into a single figure.
 
 ```{r}
 #| fig-width: 6
@@ -134,6 +130,10 @@ plot_list[["subsets_MT_percent"]] <- scater::plotColData(
 )
 cowplot::plot_grid(plotlist = plot_list, nrow = 1)
 ```
+
+> TODO: check for existing wrapper (ideally the same as above)
+
+> Note (same as above): In contrast to `Seurat`, `scater` can only plot one QC metric at a time. Here, we use `cowplot` to combine them into a single figure.
 
 #### Filter Out Low Quality Cells
 
@@ -166,6 +166,8 @@ plot_list[["subsets_MT_percent"]] <- scater::plotColData(
 cowplot::plot_grid(plotlist = plot_list, nrow = 1)
 ```
 
+> TODO: check for existing wrapper
+
 ```{r}
 #| fig-width: 6
 #| fig-height: 3
@@ -183,7 +185,7 @@ plot_list[["subsets_MT_percent"]] <- scater::plotColData(
 cowplot::plot_grid(plotlist = plot_list, nrow = 1)
 ```
 
-> TODO: check for existing wrapper
+> TODO: check for existing wrapper (ideally the same as above)
 
 ### Further Preprocessing
 
@@ -194,6 +196,8 @@ sce <- scuttle::logNormCounts(x = sce)
 sce
 ```
 
+> TODO: check for existing wrapper (ideally the same as above)
+
 ```{r}
 allf <- scran::modelGeneVar(x = sce)
 hvgs <- scran::getTopHVGs(allf, n = 2000)
@@ -202,7 +206,7 @@ hvgs <- scran::getTopHVGs(allf, n = 2000)
 > TODO: check for existing Galaxy tool wrapper.
 
 > Note: The wrapper should output both:
-> - the table of statistics for later plotting (tsv)
+> - the table of statistics for later plotting, see below (tsv)
 > - the identifiers of highly variable genes (txt)
 
 ```{r}
@@ -241,7 +245,7 @@ sce
 #### Visualise the PCA Results - Dimensional Loadings
 
 ```{r}
-message("No direct equivalent to Seurat VizDimLoadings")
+message("No direct equivalent to Seurat::VizDimLoadings")
 ```
 
 > Note: no direct impact on the rest of the tutorial.
