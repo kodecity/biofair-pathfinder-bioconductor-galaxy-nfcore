@@ -1,0 +1,36 @@
+---
+title: "Clustering 3K PBMCs with Seurat"
+author: "Kevin Rue-Albrecht"
+format: html
+---
+
+## Data
+
+To create a parallel tutorial to the existing tutorial [Clustering 3K PBMCs with Seurat](https://training.galaxyproject.org/training-material/topics/single-cell/tutorials/scrna-seurat-pbmc3k/tutorial.html), input data files were downloaded from these Zenodo links:
+
+```
+https://zenodo.org/record/3581213/files/genes.tsv
+https://zenodo.org/record/3581213/files/barcodes.tsv
+https://zenodo.org/record/3581213/files/matrix.mtx
+```
+
+## Libraries
+
+```{r}
+library(DropletUtils)
+```
+
+## SingleCellExperiment object
+
+Import the triplet of files (`matrix.mtx`, `barcodes.tsv`, `genes.tsv`) under `data/`.
+
+```{r}
+sce <- DropletUtils::read10xCounts(samples = "data")
+```
+
+Inspect the `SingleCellExperiment` object.
+
+```{r}
+sce
+```
+
