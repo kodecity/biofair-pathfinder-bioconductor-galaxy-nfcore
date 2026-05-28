@@ -46,6 +46,7 @@ sce
 ```
 
 > A Galaxy tool wrapper exists, [DropletUtils Read10x](https://usegalaxy.eu/?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Febi-gxa%2Fdropletutils_read_10x%2Fdropletutils_read_10x%2F1.0.4%2Bgalaxy0&version=latest), but:
+> 
 > - produces an `rdata` file. This file needs to be manually re-typed to `rdata.sce` or `loom` in the Galaxy interface depending on the requirements of downstream tool wrappers.
 > - does not offer the option to use gene symbols as rownames. Unless the tool wrapper can be update to offer this option, another tool wrapper is needed to set rownames to gene symbols.
 
@@ -85,6 +86,7 @@ sce
 ```
 
 > A Galaxy Tool wrapper exists, [Scater: calculate QC metrics](https://usegalaxy.eu/?tool_id=toolshed.g2.bx.psu.edu%2Frepos%2Fiuc%2Fscater_create_qcmetric_ready_sce%2Fscater_create_qcmetric_ready_sce%2F1.22.0&version=latest), but:
+> 
 > - requires the expression matrix in tabular format. This is awkward as the original matrix comes in `mtx` format, and re-exporting the matrix from the `SingleCellExperiment` object to tabular format would be awkward and unnecessary given that this function is designed to work on directly on the `SingleCellExperiment` object.
 
 ### Filtering of low-quality cells
@@ -206,6 +208,7 @@ hvgs <- scran::getTopHVGs(allf, n = 2000)
 > TODO: check for existing Galaxy tool wrapper.
 
 > Note: The wrapper should output both:
+> 
 > - the table of statistics for later plotting, see below (tsv)
 > - the identifiers of highly variable genes (txt)
 
