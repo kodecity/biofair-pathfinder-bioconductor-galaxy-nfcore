@@ -300,15 +300,60 @@ plot(percent.var, log="y", xlab="PC", ylab="Variance explained (%)")
 ## Cluster the Cells
 
 ```{r}
-colData(sce)[["cluster"]] <- clusterCells(
+colData(sce)[["cluster"]] <- scran::clusterCells(
 	x = sce,
 	use.dimred = "PCA",
 	BLUSPARAM = bluster::SNNGraphParam(
 		k = 10,
 		type="rank",
-		cluster.fun = "walktrap"
+		cluster.fun = "louvain",
+		cluster.args = list(
+			resolution = 0.5
+		)
 	)
 )
+```
+
+> TODO: check for existing Galaxy tool wrapper.
+> Note: `BLUSPARAM` thrown in there to illustrate how this might be configured, but a lot customisation is possible.
+
+### Run non-linear dimensional reduction (UMAP/tSNE)
+
+#### Perform Dimensional Reduction with UMAP
+
+```{r}
+sce <- scater::runUMAP(
+	x = sce,
+	dimred = "PCA",
+	pca = 20
+)
+```
+
+> TODO: check for existing Galaxy tool wrapper.
+
+### Visualise UMAP
+
+#### Visualise the UMAP
+
+```{r}
+scater::plotUMAP(
+	object = sce,
+	colour_by = "cluster",
+	text_by = "cluster"
+)
+```
+
+```{r}
+#| fig-width: 12
+#| fig-height: 6
+plot_list <- list()
+for (gene_id in c("CST3", "CD79A", "HLA-DQA1", "MALAT1", "NKG7", "PPBP")) {
+	plot_list[[gene_id]] <- scater::plotUMAP(
+		object = sce,
+		colour_by = gene_id
+	)
+}
+cowplot::plot_grid(plotlist = plot_list, nrow = 2)
 ```
 
 > TODO: check for existing Galaxy tool wrapper.
